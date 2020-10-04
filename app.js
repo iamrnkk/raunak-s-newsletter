@@ -1,52 +1,79 @@
 const express = require("express");
-const bodyParser= require("body-parser");
-const https= require("https");
+const bodyParser = require("body-parser");
+const https = require("https");
 
-const app= new express();
+const app = new express();
 app.use(express.static("public"));
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 
-app.get("/",function(req,res){
-res.sendFile(__dirname+"/index.html");
+
+//home route
+app.get("/", function(req, res) {
+  res.sendFile(__dirname + "/index.html");
 
 });
 
-app.post("/",function(req, res){
-const firstName= req.body.fName;
-const lastName= req.body.lName;
-const email= req.body.email;
-console.log(firstName,lastName,email);
-const data= {
-  members: [
-    {
+//redirect to home route on failure
+app.get("/failure", function(req, res) {
+  res.redirect("/");
+});
+
+//handle post method
+app.post("/", function(req, res) {
+  //get data from user
+  const firstName = req.body.fName;
+  const lastName = req.body.lName;
+  const email = req.body.email;
+  console.log(firstName, lastName, email);
+//convert data to JSON needed by mailchimp API
+  const data = {
+    members: [{
       email_address: email,
       status: "subscribed",
       merge_fields: {
         FNAME: firstName,
         LNAME: lastName,
       }
+    }]
+  };
+
+  const jsonData = JSON.stringify(data);
+
+//for authetication and security
+  const uniqueId = "your unique id";
+  const apiKey = "your api key";
+
+  const url = "https:usX.api.mailchimp.com/3.0/lists/" + uniqueId;
+
+
+  const options = {
+    method: "POST",
+    auth: "raunak:" + apiKey,
+  };
+
+  //get data from mailchimp
+  const request = https.request(url, options, function(response) {
+
+    //check if signup was successful
+    if (response.statusCode === 200) {
+      res.sendFile(__dirname + "/success.html");
+    } else {
+      res.sendFile(__dirname + "/failure.html")
     }
-  ]
-};
-const jsonData= JSON.stringify(data);
-const uniqueId="your unique id";
-const apiKey="yout api key";
-const url= "https:us2.api.mailchimp.com/3.0/lists/"+uniqueId;
-const options={
-  method: "POST",
-  auth: "raunak:"+apiKey,
-};
 
-const request= https.request(url,options,function(response){
-                response.on("data",function(data){
-                  console.log(JSON.parse(data));
-                });
-              });
- request.write(jsonData);
- request.end();
+    response.on("data", function(data) {
+      console.log(JSON.parse(data));
 
+    });
+  });
+
+  //send data to mailchhimp
+  request.write(jsonData);
+  request.end();
 });
 
-app.listen(3000,function(){
+app.listen(3000, function() {
   console.log("Server is running at port 3000");
 });
