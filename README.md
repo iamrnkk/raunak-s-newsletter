@@ -1,2 +1,2 @@
 # raunak-s-newsletter
-A simple newsletter signup page using API
+Email marketing made easy with this simple newsletter signup page using Mailchimp API.
