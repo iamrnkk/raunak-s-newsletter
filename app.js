@@ -45,7 +45,7 @@ app.post("/", function(req, res) {
   const uniqueId = "your unique id";
   const apiKey = "your api key";
 
-  const url = "https:usX.api.mailchimp.com/3.0/lists/" + uniqueId;
+  const url = "https:usX.api.mailchimp.com/3.0/lists/" + uniqueId; //change X according to your assigned region
 
 
   const options = {
@@ -74,6 +74,6 @@ app.post("/", function(req, res) {
   request.end();
 });
 
-app.listen(3000, function() {
+app.listen(process.env.PORT || 3000, function() {
   console.log("Server is running at port 3000");
 });
